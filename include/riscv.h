@@ -2,11 +2,15 @@
 #define _hart_h_
 
 #include "types.h"
-
+/* MSTATUS related */
+#define MSTATUS_MIE (1L << 3)
 #define MSTATUS_MPP_MASK (3L << 11)
 #define MSTATUS_MPP_MACHINE (3L << 11)
 #define MSTATUS_MPP_SUPER (1L << 11)
 #define MSTATUS_MPP_USER (0L << 11)
+
+/* MIE related */
+#define MIE_MTIE (1L << 7)
 
 #define PMPXCFG_R (1)
 #define PMPXCFG_W (1 << 1)
@@ -14,11 +18,10 @@
 #define PMPXCFG_A_TOR (1 << 3)
 #define PMPXCFG_L (1 << 7)
 
-// Supervisor Interrupt Enable
+// Supervisor Interrupt Enable related
 #define SIE_SEIE (1L << 9) // external
 #define SIE_STIE (1L << 5) // timer
 #define SIE_SSIE (1L << 1) // software
-
 
 #define FUNC_READ_CSR(register_name) \
 static inline uint64_t \

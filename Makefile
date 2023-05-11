@@ -1,15 +1,15 @@
-SRC = $(wildcard boot/*.c kernel/*.c)
-ASM = $(wildcard boot/*.S)
-TMP = $(SRC:.c=.o) $(ASM:.S=.o)
-OBJ = $(TMP:boot/entry.o=)
+SRC := $(wildcard boot/*.c kernel/*.c)
+ASM := $(wildcard boot/*.S trap/*.S)
+TMP := $(SRC:.c=.o) $(ASM:.S=.o)
+OBJ := $(TMP:boot/entry.o=)
 
 ifndef CPUS
 CPUS := 1
 endif
 
-BLKCOUNT = 1
+BLKCOUNT := 1
 
-QEMU = qemu-system-riscv64
+QEMU := qemu-system-riscv64
 ifndef TOOLPREFIX
 TOOLPREFIX := $(shell if riscv64-unknown-elf-objdump -i 2>&1 | grep 'elf64-big' >/dev/null 2>&1; \
 	then echo 'riscv64-unknown-elf-'; \
@@ -67,3 +67,8 @@ kernel.o: boot/entry.o $(OBJ)
 
 %.o : %.s
 	$(AS) -o $@ $< -g
+
+clean:
+	@rm kernel.bin *.o vhd 2>/dev/null || :
+	@find . -name \*.o -type f -delete
+	@find . -name \*.d -type f -delete
