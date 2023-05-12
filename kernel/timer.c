@@ -3,7 +3,7 @@
 #include "../include/types.h"
 #include "../include/param.h"
 
-uint64_t scratch[NCPU][5];
+uint64_t scratch[NCORE][5];
 
 /* 
 Timer interrupts come from clock hardware attached to each 

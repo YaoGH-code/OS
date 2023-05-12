@@ -2,6 +2,9 @@
 #define _hart_h_
 
 #include "types.h"
+
+#define PPSIZE 4096 // bytes per page
+
 /* MSTATUS related */
 #define MSTATUS_MIE (1L << 3)
 #define MSTATUS_MPP_MASK (3L << 11)
@@ -12,11 +15,22 @@
 /* MIE related */
 #define MIE_MTIE (1L << 7)
 
+/* PMPXCFG related */
 #define PMPXCFG_R (1)
 #define PMPXCFG_W (1 << 1)
 #define PMPXCFG_X (1 << 2)
 #define PMPXCFG_A_TOR (1 << 3)
 #define PMPXCFG_L (1 << 7)
+
+/* SSTATUS related */
+#define SSTATUS_SIE (1L << 1)  
+
+/* The kernel expects there to be RAM for use 
+   by the kernel and user pages from physical 
+   address 0x80000000 to PHYSTOP.
+*/
+#define KBASE 0x80000000L
+#define PHYSTOP (KBASE + 128*1024*1024)
 
 // Supervisor Interrupt Enable related
 #define SIE_SEIE (1L << 9) // external
@@ -89,6 +103,5 @@ FUNC_READ_GP(ra)
 FUNC_WRITE_GP(tp)
 FUNC_WRITE_GP(sp)
 FUNC_WRITE_GP(ra)
-
 
 #endif

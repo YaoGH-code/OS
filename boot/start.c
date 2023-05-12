@@ -3,7 +3,7 @@
 #include "../include/timer.h"
 
 /* Size: 4096 * NCPU, each element 16B alignment */
-__attribute__ ((aligned (16))) char stack0[4096 * NCPU];
+__attribute__ ((aligned (16))) char stack0[4096 * NCORE];
 
 void main();
 void mti_handler();
