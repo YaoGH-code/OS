@@ -10,7 +10,6 @@
 
 /*
     Memory layout:
-
         +------------------+ _end
         |       free       |
         +------------------+ _bss_end/_free_start

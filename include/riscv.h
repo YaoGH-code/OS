@@ -37,6 +37,10 @@
 #define SIE_STIE (1L << 5) // timer
 #define SIE_SSIE (1L << 1) // software
 
+
+/* UART registers in physical memory by QEMU */
+#define UART_BASE 0x10000000L
+
 #define FUNC_READ_CSR(register_name) \
 static inline uint64_t \
 read_##register_name() { \
