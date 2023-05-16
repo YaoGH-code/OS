@@ -6,20 +6,16 @@
 #include "../include/string.h"
 #include "../include/timer.h"
 #include "../include/types.h"
+#include "../include/uart.h"
+
 
 int main(){
-    pminit();
-    void *test = kmalloc();
-    void *test1 = kmalloc();
-    void *test2 = kmalloc();
-    void *test3 = kmalloc();
-    void *test4 = kmalloc();
-    void *test5 = kmalloc();
+    uart_init();
 
-    kfree(test);
-    kfree(test1);
-    kfree(test2);
-    kfree(test3);
+    putc_sync('a');
+    putc_sync('b');
+    putc_sync('c');
+
 
 
 
