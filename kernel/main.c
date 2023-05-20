@@ -7,14 +7,17 @@
 #include "../include/timer.h"
 #include "../include/types.h"
 #include "../include/uart.h"
+#include "../include/printk.h"
 
 
 int main(){
-    uart_init();
-
-    putc_sync('a');
-    putc_sync('b');
-    putc_sync('c');
+    if (!get_coreid()){
+        uart_init();
+        printk_init();
+        printk("xv6 kernel is booting\n");
+        printk("\n");
+    }
+    
 
 
 

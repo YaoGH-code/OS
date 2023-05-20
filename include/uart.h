@@ -2,6 +2,6 @@
 #define _uart_h_
 
 void uart_init(void);
-void putc_sync(char c);
+void uart_putc_sync(char c);
 
 #endif

@@ -24,7 +24,7 @@ http://byterunner.com/16550.html
 #define FCR_FIFO_CLEAR (3<<1)  // clear the content of the two FIFOs
 #define IER_RX_ENABLE (1<<0)
 #define IER_TX_ENABLE (1<<1)
- #define LSR_THR_IDLE (1 << 5)
+#define LSR_THR_IDLE (1 << 5)
 
 struct spinlock lock;
 
@@ -47,7 +47,7 @@ void uart_init(void){
     mm_writeb(IER, IER_TX_ENABLE | IER_RX_ENABLE);
 }
 
-void putc_sync(char c) {
+void uart_putc_sync(char c) {
     intr_push();
     while (!(mm_readb(LSR) & LSR_THR_IDLE));
     mm_writeb(THR, c);
