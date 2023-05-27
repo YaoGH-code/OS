@@ -1,3 +1,9 @@
+/*
+ * printk.c - Kernel printing functions
+ *
+ * This file contains the implementation of kernel printing functions
+ * used for formatted output to the console or UART.
+ */
 #include "../include/types.h"
 #include "../include/printk.h"
 #include "../include/uart.h"

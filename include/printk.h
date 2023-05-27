@@ -1,5 +1,5 @@
-#ifndef _printx_h_
-#define _printx_h_
+#ifndef _printk_h_
+#define _printk_h_
 #include <stdarg.h>
 
 void printk_init(void);

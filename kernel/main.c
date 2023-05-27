@@ -1,3 +1,10 @@
+/*
+ * main.c - Kernel entry point
+ *
+ * This file contains the main entry point for the kernel. It initializes
+ * the UART, sets up the printk function, and performs the initial boot
+ * sequence.
+ */
 #include "../include/kmalloc.h"
 #include "../include/param.h"
 #include "../include/proc.h"
@@ -14,8 +21,16 @@ int main(){
     if (!get_coreid()){
         uart_init();
         printk_init();
-        printk("xv6 kernel is booting\n");
         printk("\n");
+        printk("Kernel is booting...\n");
+        pm_init();
+        int *i = (int*) kmalloc();
+        for (int j=0; j<10; j++){
+            printk("%d\n", i[j]);
+
+
+        }
+
     }
     
 

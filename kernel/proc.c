@@ -1,3 +1,9 @@
+/*
+ * core.c - Core management
+ *
+ * This file contains the implementation of core management functions
+ * and data structures for managing cores in a multi-core system.
+ */
 #include "../include/proc.h"
 #include "../include/riscv.h"
 

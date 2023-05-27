@@ -40,7 +40,7 @@ struct {
 } memory;
 
 /* Initialize memory struct and spinlock */
-void pminit(){
+void pm_init(){
     spinlock_init(&memory.lock);
     memory.freelist = 0;
     for (char* i = free_start; i + PPSIZE < end; i+=PPSIZE){

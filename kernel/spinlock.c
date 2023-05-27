@@ -6,6 +6,7 @@
 #include "../include/riscv.h"
 #include "../include/spinlock.h"
 #include "../include/proc.h"
+#include "../include/kerror.h"
 
 /*
 However, the interrupt may already be disabled before the first time of 
@@ -45,16 +46,17 @@ void intr_pop(){
     uint64_t cur_sstatus = read_sstatus();
     /* If SIE, old_state = 1; if not SIE, old_state = 0 */
     int old_state = ((cur_sstatus & SSTATUS_SIE) != 0);
-    if (old_state)
+    if (old_state);
         // kerror();          
         
-    if (core->disable_cnt < 1) 
+    if (core->disable_cnt < 1);
         // kerror();          
 
     /* Outter most level of disable, turn on interrupt if it is 
     on previously. */
-    if (core->disable_cnt == 0 && core->prev_int_state == 1) 
+    if (core->disable_cnt == 0 && core->prev_int_state == 1){
         write_sstatus(read_sstatus() | SSTATUS_SIE);
+    }
     core->disable_cnt--;
 }
 
@@ -82,7 +84,7 @@ timeslicing while lock is held and no interrupt will be processed.
 void acquire_spinlock(struct spinlock* lock){
     intr_push();
     if (core_holding(lock))
-        // kerror();          
+        kerror("there is already a core holding the spin lock.\n");          
 
     /* CAS */
     while(__sync_lock_test_and_set(&lock->locked, 1) != 0);
@@ -103,7 +105,7 @@ void acquire_spinlock(struct spinlock* lock){
 /* Release spin lock */
 void release_spinlock(struct spinlock* lock){
     if (!core_holding(lock))
-        // kerror();          
+        kerror("there is not a core holding the spin lock.\n");                    
 
     lock->core = 0;
     __sync_synchronize(); // do not reorder into cs
