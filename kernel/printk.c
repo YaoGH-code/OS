@@ -27,6 +27,11 @@ void print_int(int n, int b){
     int i = 0;
     char buf[16];
 
+    if (b == 16) {
+        console_putc('0');
+        console_putc('x');
+    }
+
     if (n<0) pos_n = -n;
     else pos_n = n;
     while (pos_n>0) {

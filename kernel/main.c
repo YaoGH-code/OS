@@ -15,7 +15,7 @@
 #include "../include/types.h"
 #include "../include/uart.h"
 #include "../include/printk.h"
-
+#include "../include/vm.h"
 
 int main(){
     if (!get_coreid()){
@@ -24,12 +24,10 @@ int main(){
         printk("\n");
         printk("Kernel is booting...\n");
         pm_init();
-        int *i = (int*) kmalloc();
-        for (int j=0; j<10; j++){
-            printk("%d\n", i[j]);
+        printk("%x\n",123);
 
-
-        }
+        printk("%x\n",addr_round(0x12345678, 4096, 0));
+        printk("%x\n",addr_round(0x12345678, 4096, 1));
 
     }
     
