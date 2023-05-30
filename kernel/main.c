@@ -24,10 +24,9 @@ int main(){
         printk("\n");
         printk("Kernel is booting...\n");
         pm_init();
-        printk("%x\n",123);
+        kernel_vm_init();
 
-        printk("%x\n",addr_round(0x12345678, 4096, 0));
-        printk("%x\n",addr_round(0x12345678, 4096, 1));
+
 
     }
     

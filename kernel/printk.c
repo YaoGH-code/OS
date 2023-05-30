@@ -31,7 +31,11 @@ void print_int(int n, int b){
         console_putc('0');
         console_putc('x');
     }
-
+    
+    if (n==0) {
+        console_putc('0');
+        return;
+    }
     if (n<0) pos_n = -n;
     else pos_n = n;
     while (pos_n>0) {
@@ -72,6 +76,8 @@ void printk(const char *fmt, ...){
             char type = fmt[++i];
             if (type == 's')
                 print_str(va_arg(p, char*));
+            else if (type == 'o')
+                print_int(va_arg(p, int), 8);
             else if (type == 'd')
                 print_int(va_arg(p, int), 10);
             else if (type == 'x')

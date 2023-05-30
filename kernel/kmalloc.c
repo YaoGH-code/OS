@@ -7,6 +7,8 @@
 #include "../include/types.h"
 #include "../include/string.h"
 #include "../include/spinlock.h"
+#include "../include/printk.h"
+
 
 /*
     Memory layout:
@@ -46,6 +48,7 @@ void pm_init(){
     for (char* i = free_start; i + PPSIZE < end; i+=PPSIZE){
         kfree((void*) i);
     }
+    printk("[kmalloc.c] pm_init: _free_start:%p end:%p\n",free_start, end);
 }
 
 /* 
@@ -63,8 +66,9 @@ void* kmalloc(){
     }
     release_spinlock(&memory.lock);
 
-    if (b)
+    if (b) 
         memset((char*)b, 5, PPSIZE);
+    printk("[kmalloc.c] kmalloc: allocated at %p\n", (void*)b);
     return (void*)b;
 }
 
