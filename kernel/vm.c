@@ -10,6 +10,7 @@
 #include "../include/riscv.h"
 #include "../include/string.h"
 #include "../include/printk.h"
+#include <stdio.h>
 
 
 /* 
@@ -38,7 +39,6 @@ ptb_t kernel_ptb;
 /* Return the address of the PTE in page table pagetable that corresponds to virtual 
 address va. Create any required page-table pages if needed. */
 pte_t* search_pttree(ptb_t pagetable, uint64_t va, int alloc){
-    printk("[vm.c] pagetable: %p, va: %p \n", pagetable, va);
     if (va > MAXVA) 
         kerror("[vm.c] search_pttree: Illegal virtual memory address \n");
 
@@ -46,38 +46,40 @@ pte_t* search_pttree(ptb_t pagetable, uint64_t va, int alloc){
         /* Get the index for the current level of page table */
         uint64_t idx = GET_PT_IDX(va, level);
         /* Get PTE from page table */
-        pte_t pte = pagetable[idx];
-        if (PTE_VALID(pte)) {
+        pte_t* pte = &pagetable[idx];
+
+        if (PTE_VALID(*pte)) {
             /* If this PTE is valid, then we get PA from this PTE and
                may going into the next level of page table using this 
                PA */
-            pagetable = (ptb_t)GET_PA(pte);
+            pagetable = (ptb_t)GET_PA(*pte);
         } else {
             /* If it is not valid (not initialized), then allocate 
                and initialize the corresponding page table, return 
                0 */
             if(!alloc || (pagetable = (uint64_t*)kmalloc()) == 0) return 0;
-            printk("[vm.c] allocated page %p for level %d \n", pagetable, level-1);
+            printk("[vm.c] allocated page %p for level %d page table\n", pagetable, level-1);
             memset(pagetable, 0, PPSIZE);
-            pte = GET_PTE(pagetable) | PTE_V;
+            *pte = GET_PTE(pagetable) | PTE_V;
         }
     }
     return &pagetable[GET_PT_IDX(va, 0)];
 }
 
-int map_pages(ptb_t pagetable, uint64_t va, uint64_t size, uint64_t pa, int perm){
+int map_pages(ptb_t pagetable, uint64_t va, uint64_t size, uint64_t pa, int perm, char* purp){
     if (size <= 0)
-        kerror("[vm.c] map_pages: Incorrect size\n");
+        kerror("[vm.c] map_pages: Incorrect size");
     uint64_t curr_va = ADDR_ROUND(va, PPSIZE, 0);
-    uint64_t end_va = ADDR_ROUND(va+PPSIZE-1, PPSIZE, 1);
+    uint64_t end_va = ADDR_ROUND((va+size), PPSIZE, 0);
+    printk("[vm.c] Mapping va[%p-%p] to pa[%p] for %s\n",curr_va, end_va, pa, purp);
     pte_t* pte;
 
     while (curr_va < end_va) {
         pte = search_pttree(pagetable, curr_va, PG_ALLOC);
         if (!pte) return -1;
-        if (PTE_VALID(*pte)) kerror("[vm.c] map_pages: PTE already valid\n");
+        if (PTE_VALID(*pte)) 
+            kerror("[vm.c] map_pages: PTE already valid");
         *pte = GET_PTE(pa) | perm | PTE_V;
-        printk("TTTTRRR: %p\n", *pte);
         curr_va += PPSIZE;
         pa += PPSIZE;
     }
@@ -88,7 +90,11 @@ void kernel_vm_init(){
     kernel_ptb = (ptb_t) kmalloc();
     memset((void*)kernel_ptb, 0, PPSIZE);
 
-    map_pages(kernel_ptb, UART_BASE, PPSIZE, UART_BASE, PTE_R | PTE_W);
+    printk("+------------------------------------------+\n");
+    printk("|              kernel_vm_init              |\n");
+    printk("+------------------------------------------+\n");
+
+    map_pages(kernel_ptb, UART_BASE, PPSIZE, UART_BASE, PTE_R | PTE_W, "UART");
 
 
 

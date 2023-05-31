@@ -18,8 +18,10 @@ void printk_init(void){
 
 void print_str(char *s) {
     int i=0; 
-    while (s[i])
+    while (s[i]){
         uart_putc_sync(s[i]);
+        i++;
+    }
 }
 
 void print_int(int n, int b){
@@ -40,8 +42,10 @@ void print_int(int n, int b){
     else pos_n = n;
     while (pos_n>0) {
         int rem = pos_n % b;
-        if (rem > 9) buf[i] = 'a' + rem - 10;
-        else buf[i] = '0' + rem;
+        if (rem > 9)
+            buf[i] = 'a' + rem - 10;
+        else
+            buf[i] = '0' + rem;
         pos_n = pos_n/b;
         i++;
     }
@@ -58,11 +62,14 @@ void print_ptr(uint64_t x){
   console_putc('x');
   while (x>0) {
     int rem = x % 16;
-    if (rem > 9) buf[i] = 'a' + rem - 10;
-    else buf[i] = '0' + rem;
+    if (rem > 9)
+        buf[i] = 'a' + rem - 10;
+    else
+        buf[i] = '0' + rem;
     x = x/16;
     i++;
   }
+  i--;
   for (; i>=0; i--) console_putc(buf[i]);
 }
 

@@ -43,12 +43,15 @@ struct {
 
 /* Initialize memory struct and spinlock */
 void pm_init(){
+    printk("+------------------------------------------+\n");
+    printk("|                  pm_init                 |\n");
+    printk("+------------------------------------------+\n");
     spinlock_init(&memory.lock);
     memory.freelist = 0;
     for (char* i = free_start; i + PPSIZE < end; i+=PPSIZE){
         kfree((void*) i);
     }
-    printk("[kmalloc.c] pm_init: _free_start:%p end:%p\n",free_start, end);
+    printk("[kmalloc.c] pm_init: free_start@%p to end@%p\n", free_start, end);
 }
 
 /* 
@@ -68,7 +71,7 @@ void* kmalloc(){
 
     if (b) 
         memset((char*)b, 5, PPSIZE);
-    printk("[kmalloc.c] kmalloc: allocated at %p\n", (void*)b);
+    // printk("[kmalloc.c] kmalloc: allocated at %p\n", (void*)b);
     return (void*)b;
 }
 

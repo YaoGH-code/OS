@@ -43,11 +43,15 @@ this could avoid the sign extension of a
 /* Extract the page table index for a certain level */
 #define GET_PT_IDX(va, level) ((va >> ((level * PTIDX_LEN) + PG_OFFSET)) & (PTIDX_MASK))
 /* Round an address to a boundary */
-#define ADDR_ROUND(address, target, dir) ((dir) ? ((address+target-1) & ~(target-1)) : (address & ~(target - 1)))
+#define ADDR_ROUND(address, target, dir) ((dir) ? ((address+target-1) & ~(target-1)) : (address & (~(target - 1))))
 /* Get pa from PTE */
 #define GET_PA(pte) (((pte) >> 10) << 12)
 /* Get PTE from pa */
 #define GET_PTE(pa) ((((uint64_t)pa) >> 12) << 10)
+
+
+#define PGROUNDDOWN(a) (((a)) & ~(PPSIZE-1))
+
 
 pte_t* search_pttree(ptb_t pagetable, uint64_t va, int alloc);
 void kernel_vm_init();
