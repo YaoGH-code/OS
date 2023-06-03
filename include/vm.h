@@ -49,10 +49,6 @@ this could avoid the sign extension of a
 /* Get PTE from pa */
 #define GET_PTE(pa) ((((uint64_t)pa) >> 12) << 10)
 
-
-#define PGROUNDDOWN(a) (((a)) & ~(PPSIZE-1))
-
-
 pte_t* search_pttree(ptb_t pagetable, uint64_t va, int alloc);
 void kernel_vm_init();
 

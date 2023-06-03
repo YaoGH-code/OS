@@ -60,7 +60,7 @@ kernel.bin: kernel.o
 	$(OBJCOPY) $< $@ -O binary
 
 kernel.o: boot/entry.o $(OBJ)
-	$(LD) -Tlink.ld -o $@ $^ 
+	$(LD) -T link.ld -o $@ $^ 
 
 %.o : %.c
 	$(CC) -c $(CFLAGS) -o $@ $< -g

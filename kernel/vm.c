@@ -10,8 +10,7 @@
 #include "../include/riscv.h"
 #include "../include/string.h"
 #include "../include/printk.h"
-#include <stdio.h>
-
+#include "../include/types.h"
 
 /* 
  * xv6 runs on Sv39 RISC-V, which means that only the bottom 39 bits of a 64-bit virtual 
@@ -32,15 +31,20 @@
  * +-------------+---------------+---------------+---------------+---------------------+
  * |  Must be 0  | Level-2 Index | Level-1 Index | Level-0 Index | Byte Offset in Page |
  * +-------------+---------------+---------------+---------------+---------------------+
- */
+ */              
+
+extern char etext[];
+extern char end[];
+extern char trampoline[]; // trampoline.S
 
 ptb_t kernel_ptb;
+
 
 /* Return the address of the PTE in page table pagetable that corresponds to virtual 
 address va. Create any required page-table pages if needed. */
 pte_t* search_pttree(ptb_t pagetable, uint64_t va, int alloc){
     if (va > MAXVA) 
-        kerror("[vm.c] search_pttree: Illegal virtual memory address \n");
+        kerror(__FILE_NAME__,__LINE__,"Illegal virtual memory address");
 
     for (int level = 2; level > 0; level--){
         /* Get the index for the current level of page table */
@@ -66,25 +70,27 @@ pte_t* search_pttree(ptb_t pagetable, uint64_t va, int alloc){
     return &pagetable[GET_PT_IDX(va, 0)];
 }
 
+
 int map_pages(ptb_t pagetable, uint64_t va, uint64_t size, uint64_t pa, int perm, char* purp){
     if (size <= 0)
-        kerror("[vm.c] map_pages: Incorrect size");
+        kerror(__FILE_NAME__,__LINE__,"Incorrect size");
     uint64_t curr_va = ADDR_ROUND(va, PPSIZE, 0);
-    uint64_t end_va = ADDR_ROUND((va+size), PPSIZE, 0);
+    uint64_t end_va  = ADDR_ROUND((va+size), PPSIZE, 0);
     printk("[vm.c] Mapping va[%p-%p] to pa[%p] for %s\n",curr_va, end_va, pa, purp);
     pte_t* pte;
 
     while (curr_va < end_va) {
         pte = search_pttree(pagetable, curr_va, PG_ALLOC);
-        if (!pte) return -1;
+        if (!pte) return 0;
         if (PTE_VALID(*pte)) 
-            kerror("[vm.c] map_pages: PTE already valid");
+            kerror(__FILE_NAME__,__LINE__,"PTE already valid");
         *pte = GET_PTE(pa) | perm | PTE_V;
         curr_va += PPSIZE;
         pa += PPSIZE;
     }
-    return 0;
+    return 1;
 }
+
 
 void kernel_vm_init(){
     kernel_ptb = (ptb_t) kmalloc();
@@ -94,11 +100,35 @@ void kernel_vm_init(){
     printk("|              kernel_vm_init              |\n");
     printk("+------------------------------------------+\n");
 
-    map_pages(kernel_ptb, UART_BASE, PPSIZE, UART_BASE, PTE_R | PTE_W, "UART");
+    // UART
+    if (!map_pages(kernel_ptb, UART_BASE, PPSIZE, UART_BASE, PTE_R | PTE_W, "UART"))
+        kerror(__FILE_NAME__,__LINE__,"Error in mapping UART");
+    
+    // Text
+    if (!map_pages(kernel_ptb, KBASE, (uint64_t)etext-KBASE, KBASE, PTE_R | PTE_X, "Kernel text"))
+        kerror(__FILE_NAME__,__LINE__,"Error in mapping Kernel text");
+    
+    // Data
+    if (!map_pages(kernel_ptb, (uint64_t)etext, (uint64_t)end-(uint64_t)etext, (uint64_t)etext, PTE_R | PTE_W, "Kernel data"))
+        kerror(__FILE_NAME__,__LINE__,"Error in mapping Kernel data");
+    
+    // PLIC
+    if (!map_pages(kernel_ptb, PLIC, 0x400000, PLIC, PTE_R | PTE_W, "PLIC"))
+        kerror(__FILE_NAME__,__LINE__,"Error in mapping PLIC");
+    
+    // Virtio
+    if (!map_pages(kernel_ptb, VIRTIO, PPSIZE, VIRTIO, PTE_R | PTE_W, "Virtio"))
+        kerror(__FILE_NAME__,__LINE__,"Error in mapping Virtio");
+    
+    // Trampoline
+    // if (!map_pages(kernel_ptb, MAXVA-PPSIZE, PPSIZE, (uint64_t)trampoline, PTE_R | PTE_X, "Trampoline"))
+    //     kerror(__FILE_NAME__,__LINE__,"Error in mapping Trampoline");
 
-
-
+    asm ("sfence.vma zero, zero");
+    write_satp((uint64_t)kernel_ptb >> 12 | (1L << 63));
+    asm ("sfence.vma zero, zero");
 }
+
 
 
 

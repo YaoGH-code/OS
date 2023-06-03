@@ -84,7 +84,7 @@ timeslicing while lock is held and no interrupt will be processed.
 void acquire_spinlock(struct spinlock* lock){
     intr_push();
     if (core_holding(lock))
-        kerror("there is already a core holding the spin lock.\n");          
+        kerror(__FILE_NAME__,__LINE__,"there is already a core holding the spin lock.\n");          
 
     /* CAS */
     while(__sync_lock_test_and_set(&lock->locked, 1) != 0);
@@ -105,7 +105,7 @@ void acquire_spinlock(struct spinlock* lock){
 /* Release spin lock */
 void release_spinlock(struct spinlock* lock){
     if (!core_holding(lock))
-        kerror("there is not a core holding the spin lock.\n");                    
+        kerror(__FILE_NAME__,__LINE__,"there is not a core holding the spin lock.\n");                    
 
     lock->core = 0;
     __sync_synchronize(); // do not reorder into cs
