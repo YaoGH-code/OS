@@ -16,6 +16,7 @@
 #include "../include/uart.h"
 #include "../include/printk.h"
 #include "../include/vm.h"
+#include "../include/trap_handle.h"
 
 int main(){
     if (!get_coreid()){
@@ -25,6 +26,11 @@ int main(){
         printk("Kernel is booting...\n");
         pm_init();
         kernel_vm_init();
+        proc_init();
+        trap_init();
+
+
+
 
 
 

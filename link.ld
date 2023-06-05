@@ -9,13 +9,23 @@ MEMORY
 SECTIONS
 {
   /*
-   * ensure that entry.S / _entry is at 0x80000000,
-   * where qemu's -kernel jumps.
+   * Ensure that entry.S / _entry is at 0x80000000, where qemu's -kernel jumps.
+   *
+   * In this example, if the program defines _etext (with a leading underscore), 
+   * the linker will give a duplicate definition error. On the other hand, if the 
+   * program defines etext (without a leading underscore), the linker will 
+   * default to using the program's definition.
+   * If the program references etext but does not define it, the linker will use 
+   * the definition from the linker script.
    */
 
   .text : {
     *(.text .text.*)
     . = ALIGN(0x1000);
+    _trap = .;
+    *(trampsec)
+    . = ALIGN(0x1000);
+    ASSERT(. - _trap == 0x1000, "error: trampoline larger than one page");
     PROVIDE(etext = .);
   } >ram
 

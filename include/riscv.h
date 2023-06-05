@@ -3,7 +3,8 @@
 
 #include "types.h"
 
-#define PPSIZE 4096 // bytes per page
+/* Page size */
+#define PSIZE 4096 
 
 /* MSTATUS related */
 #define MSTATUS_MIE (1L << 3)
@@ -25,10 +26,17 @@
 /* SSTATUS related */
 #define SSTATUS_SIE (1L << 1)  
 
-/* The kernel expects there to be RAM for use 
-   by the kernel and user pages from physical 
-   address 0x80000000 to PHYSTOP.
-*/
+/**
+ *+--------------------------------------+
+ *             Memory related            *
+ *+--------------------------------------+
+ */
+/* sv39 allows to use 39 bits for virtual 
+addresses but we only use 38 bits since 
+this could avoid the sign extension of a 
+39 bits address with bit 38 set. */
+#define MAXVA (1L << 38)
+
 #define KBASE 0x80000000L
 #define PHYSTOP (KBASE + 128*1024*1024)
 
@@ -36,7 +44,6 @@
 #define SIE_SEIE (1L << 9) // external
 #define SIE_STIE (1L << 5) // timer
 #define SIE_SSIE (1L << 1) // software
-
 
 /* UART registers in physical memory by QEMU */
 #define UART_BASE 0x10000000L
@@ -47,6 +54,14 @@
 /* PLIC */
 #define PLIC 0x0c000000L
 
+/* Trap: mapping trap code to the highest address
+   in user and kernel space */
+#define TRAP (MAXVA - PSIZE)
+/* Map trap frame to one lower page of the TRAP 
+   address */
+#define TRAP_FRAME (TRAP - PSIZE)
+
+/* Register access registration */
 #define FUNC_READ_CSR(register_name) \
 static inline uint64_t \
 read_##register_name() { \

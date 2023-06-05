@@ -1,4 +1,4 @@
-SRC := $(wildcard boot/*.c kernel/*.c)
+SRC := $(wildcard boot/*.c kernel/*.c trap/*.c)
 ASM := $(wildcard boot/*.S trap/*.S)
 TMP := $(SRC:.c=.o) $(ASM:.S=.o)
 OBJ := $(TMP:boot/entry.o=)
@@ -30,7 +30,7 @@ QEMUOPTS += -drive file=vhd,if=none,format=raw,id=x0
 QEMUOPTS += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
 
 CC = $(TOOLPREFIX)gcc
-AS = $(TOOLPREFIX)gas
+AS = $(TOOLPREFIX)as
 LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
@@ -65,7 +65,7 @@ kernel.o: boot/entry.o $(OBJ)
 %.o : %.c
 	$(CC) -c $(CFLAGS) -o $@ $< -g
 
-%.o : %.s
+%.o : %.S
 	$(AS) -o $@ $< -g
 
 clean:

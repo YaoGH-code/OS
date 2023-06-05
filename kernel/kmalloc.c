@@ -48,7 +48,7 @@ void pm_init(){
     printk("+------------------------------------------+\n");
     spinlock_init(&memory.lock);
     memory.freelist = 0;
-    for (char* i = free_start; i + PPSIZE < end; i+=PPSIZE){
+    for (char* i = free_start; i + PSIZE < end; i+=PSIZE){
         kfree((void*) i);
     }
     printk("[kmalloc.c] pm_init: free_start@%p to end@%p\n", free_start, end);
@@ -70,18 +70,18 @@ void* kmalloc(){
     release_spinlock(&memory.lock);
 
     if (b) 
-        memset((char*)b, 5, PPSIZE);
+        memset((char*)b, 5, PSIZE);
     // printk("[kmalloc.c] kmalloc: allocated at %p\n", (void*)b);
     return (void*)b;
 }
 
 /* Free a 4096 bytes physical page pointed by pa */
 void kfree(void *pa){
-    if (((uint64_t)pa % PPSIZE) != 0 || (char *)pa < free_start || (char *)pa > end){
+    if (((uint64_t)pa % PSIZE) != 0 || (char *)pa < free_start || (char *)pa > end){
         //kerror();
     }
 
-    memset(pa, 1, PPSIZE);
+    memset(pa, 1, PSIZE);
     struct block *b = (struct block *) pa;
 
     acquire_spinlock(&memory.lock);

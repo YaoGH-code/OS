@@ -35,10 +35,9 @@
 
 extern char etext[];
 extern char end[];
-extern char trampoline[]; // trampoline.S
+extern char trap[];
 
 ptb_t kernel_ptb;
-
 
 /* Return the address of the PTE in page table pagetable that corresponds to virtual 
 address va. Create any required page-table pages if needed. */
@@ -62,8 +61,8 @@ pte_t* search_pttree(ptb_t pagetable, uint64_t va, int alloc){
                and initialize the corresponding page table, return 
                0 */
             if(!alloc || (pagetable = (uint64_t*)kmalloc()) == 0) return 0;
-            printk("[vm.c] allocated page %p for level %d page table\n", pagetable, level-1);
-            memset(pagetable, 0, PPSIZE);
+            // printk("[vm.c] allocated page %p for level %d page table\n", pagetable, level-1);
+            memset(pagetable, 0, PSIZE);
             *pte = GET_PTE(pagetable) | PTE_V;
         }
     }
@@ -74,8 +73,8 @@ pte_t* search_pttree(ptb_t pagetable, uint64_t va, int alloc){
 int map_pages(ptb_t pagetable, uint64_t va, uint64_t size, uint64_t pa, int perm, char* purp){
     if (size <= 0)
         kerror(__FILE_NAME__,__LINE__,"Incorrect size");
-    uint64_t curr_va = ADDR_ROUND(va, PPSIZE, 0);
-    uint64_t end_va  = ADDR_ROUND((va+size), PPSIZE, 0);
+    uint64_t curr_va = ADDR_ROUND(va, PSIZE, 0);
+    uint64_t end_va  = ADDR_ROUND((va+size), PSIZE, 0);
     printk("[vm.c] Mapping va[%p-%p] to pa[%p] for %s\n",curr_va, end_va, pa, purp);
     pte_t* pte;
 
@@ -85,8 +84,8 @@ int map_pages(ptb_t pagetable, uint64_t va, uint64_t size, uint64_t pa, int perm
         if (PTE_VALID(*pte)) 
             kerror(__FILE_NAME__,__LINE__,"PTE already valid");
         *pte = GET_PTE(pa) | perm | PTE_V;
-        curr_va += PPSIZE;
-        pa += PPSIZE;
+        curr_va += PSIZE;
+        pa += PSIZE;
     }
     return 1;
 }
@@ -94,14 +93,14 @@ int map_pages(ptb_t pagetable, uint64_t va, uint64_t size, uint64_t pa, int perm
 
 void kernel_vm_init(){
     kernel_ptb = (ptb_t) kmalloc();
-    memset((void*)kernel_ptb, 0, PPSIZE);
+    memset((void*)kernel_ptb, 0, PSIZE);
 
     printk("+------------------------------------------+\n");
     printk("|              kernel_vm_init              |\n");
     printk("+------------------------------------------+\n");
 
     // UART
-    if (!map_pages(kernel_ptb, UART_BASE, PPSIZE, UART_BASE, PTE_R | PTE_W, "UART"))
+    if (!map_pages(kernel_ptb, UART_BASE, PSIZE, UART_BASE, PTE_R | PTE_W, "UART"))
         kerror(__FILE_NAME__,__LINE__,"Error in mapping UART");
     
     // Text
@@ -117,12 +116,16 @@ void kernel_vm_init(){
         kerror(__FILE_NAME__,__LINE__,"Error in mapping PLIC");
     
     // Virtio
-    if (!map_pages(kernel_ptb, VIRTIO, PPSIZE, VIRTIO, PTE_R | PTE_W, "Virtio"))
+    if (!map_pages(kernel_ptb, VIRTIO, PSIZE, VIRTIO, PTE_R | PTE_W, "Virtio"))
         kerror(__FILE_NAME__,__LINE__,"Error in mapping Virtio");
     
-    // Trampoline
-    // if (!map_pages(kernel_ptb, MAXVA-PPSIZE, PPSIZE, (uint64_t)trampoline, PTE_R | PTE_X, "Trampoline"))
-    //     kerror(__FILE_NAME__,__LINE__,"Error in mapping Trampoline");
+    /* Trap 
+     * The trap is supposed to be at the second page from the start of the 
+     * KER_BASE, so we mapped MAXVA-PSIZE to trap ehich is defined in the 
+     * linker script 
+     */
+    if (!map_pages(kernel_ptb, MAXVA-PSIZE, PSIZE, (uint64_t)trap, PTE_R | PTE_X, "Trap"))
+        kerror(__FILE_NAME__,__LINE__,"Error in mapping trap");
 
     asm ("sfence.vma zero, zero");
     write_satp((uint64_t)kernel_ptb >> 12 | (1L << 63));

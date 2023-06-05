@@ -1,6 +1,7 @@
 #ifndef _vm_h_
 #define _vm_h_
 #include "../include/types.h"
+#include "../include/riscv.h"
 
 typedef uint64_t* ptb_t;
 typedef uint64_t pte_t;
@@ -34,12 +35,6 @@ typedef uint64_t pte_t;
 /* PTE user access */
 #define PTE_USER(pte) ((pte) & (PTE_U))
 
-/* sv39 allows to use 39 bits for virtual 
-addresses but we only use 38 bits since 
-this could avoid the sign extension of a 
-39 bits address with bit 38 set. */
-#define MAXVA (1L << 38)
-
 /* Extract the page table index for a certain level */
 #define GET_PT_IDX(va, level) ((va >> ((level * PTIDX_LEN) + PG_OFFSET)) & (PTIDX_MASK))
 /* Round an address to a boundary */
@@ -48,6 +43,8 @@ this could avoid the sign extension of a
 #define GET_PA(pte) (((pte) >> 10) << 12)
 /* Get PTE from pa */
 #define GET_PTE(pa) ((((uint64_t)pa) >> 12) << 10)
+/* Get process' kernel stack */
+#define GET_PROC_KSTACK(num) (TRAP - (PSIZE*((num+1)*2)))
 
 pte_t* search_pttree(ptb_t pagetable, uint64_t va, int alloc);
 void kernel_vm_init();

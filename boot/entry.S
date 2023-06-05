@@ -19,6 +19,7 @@ _entry:                 /* basically adding a offset ((mhartid+1)*4096) to
     (e.g., at reset), and so require one hart to have a known hart ID of zero. 
     For efficiency, system implementers should aim to reduce the magnitude of 
     the largest hart ID used in a system. */
+
     csrr a1, mhartid
     addi a1, a1, 1      # a1 += 1
     mul a0, a0, a1      # a0 *= a1
