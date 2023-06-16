@@ -38,7 +38,7 @@ typedef uint64_t pte_t;
 /* Extract the page table index for a certain level */
 #define GET_PT_IDX(va, level) ((va >> ((level * PTIDX_LEN) + PG_OFFSET)) & (PTIDX_MASK))
 /* Round an address to a boundary */
-#define ADDR_ROUND(address, target, dir) ((dir) ? ((address+target-1) & ~(target-1)) : (address & (~(target - 1))))
+#define ADDR_ROUND(address, target, dir) ((dir) ? ((address+target-1) & ~(target-1)) : (address & (~(target-1))))
 /* Get pa from PTE */
 #define GET_PA(pte) (((pte) >> 10) << 12)
 /* Get PTE from pa */
@@ -46,7 +46,8 @@ typedef uint64_t pte_t;
 /* Get process' kernel stack */
 #define GET_PROC_KSTACK(num) (TRAP - (PSIZE*((num+1)*2)))
 
-pte_t* search_pttree(ptb_t pagetable, uint64_t va, int alloc);
+pte_t* search_pt_tree(ptb_t pagetable, uint64_t va, int alloc);
+int map_pages(ptb_t pagetable, uint64_t va, uint64_t size, uint64_t pa, int perm, char* purp);
 void kernel_vm_init();
 
 #endif

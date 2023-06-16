@@ -17,6 +17,7 @@
 #include "../include/printk.h"
 #include "../include/vm.h"
 #include "../include/trap_handle.h"
+#include "../include/plic.h"
 
 int main(){
     if (!get_coreid()){
@@ -28,6 +29,9 @@ int main(){
         kernel_vm_init();
         proc_init();
         trap_init();
+        plic_init();
+        
+
 
 
 

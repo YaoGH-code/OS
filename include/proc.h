@@ -6,7 +6,9 @@
 #include "../include/spinlock.h"
 #include "../include/vm.h"
 
-enum proc_state { INITED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+#define pid_t int
+
+enum proc_state { INITED, PICKED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
 struct context {
   uint64_t ra;
@@ -104,6 +106,7 @@ extern struct core cores[NCORE];
 
 int get_coreid();
 struct core* get_mycore();
+struct proc* get_new_proc();
 void proc_init();
 
 #endif

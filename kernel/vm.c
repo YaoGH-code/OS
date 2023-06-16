@@ -1,5 +1,5 @@
 /*
- * vm.c
+ * vm.c - Virtual Memory Management
  * 
  */
 
@@ -41,7 +41,7 @@ ptb_t kernel_ptb;
 
 /* Return the address of the PTE in page table pagetable that corresponds to virtual 
 address va. Create any required page-table pages if needed. */
-pte_t* search_pttree(ptb_t pagetable, uint64_t va, int alloc){
+pte_t* search_pt_tree(ptb_t pagetable, uint64_t va, int alloc){
     if (va > MAXVA) 
         kerror(__FILE_NAME__,__LINE__,"Illegal virtual memory address");
 
@@ -69,7 +69,7 @@ pte_t* search_pttree(ptb_t pagetable, uint64_t va, int alloc){
     return &pagetable[GET_PT_IDX(va, 0)];
 }
 
-
+/*  */
 int map_pages(ptb_t pagetable, uint64_t va, uint64_t size, uint64_t pa, int perm, char* purp){
     if (size <= 0)
         kerror(__FILE_NAME__,__LINE__,"Incorrect size");
@@ -79,7 +79,7 @@ int map_pages(ptb_t pagetable, uint64_t va, uint64_t size, uint64_t pa, int perm
     pte_t* pte;
 
     while (curr_va < end_va) {
-        pte = search_pttree(pagetable, curr_va, PG_ALLOC);
+        pte = search_pt_tree(pagetable, curr_va, PG_ALLOC);
         if (!pte) return 0;
         if (PTE_VALID(*pte)) 
             kerror(__FILE_NAME__,__LINE__,"PTE already valid");
@@ -91,8 +91,9 @@ int map_pages(ptb_t pagetable, uint64_t va, uint64_t size, uint64_t pa, int perm
 }
 
 
+/* Initialize virtual memory for kernel space */
 void kernel_vm_init(){
-    kernel_ptb = (ptb_t) kmalloc();
+    kernel_ptb = (ptb_t)kmalloc();
     memset((void*)kernel_ptb, 0, PSIZE);
 
     printk("+------------------------------------------+\n");
