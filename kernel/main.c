@@ -19,6 +19,9 @@
 #include "../include/trap_handle.h"
 #include "../include/plic.h"
 
+extern ptb_t kernel_ptb;
+extern char etext[];
+
 int main(){
     if (!get_coreid()){
         uart_init();
@@ -28,9 +31,12 @@ int main(){
         pm_init();
         kernel_vm_init();
         proc_init();
-        trap_init();
-        plic_init();
-        
+        // trap_init();
+        // plic_init();
+        printk("Kernel is booting...\n");
+
+
+
 
 
 
@@ -39,6 +45,7 @@ int main(){
 
 
     }
+    for (;;);
     
 
 

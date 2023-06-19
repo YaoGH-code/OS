@@ -18,6 +18,7 @@ typedef uint64_t pte_t;
 #define PTE_W (1L << 2)
 #define PTE_X (1L << 3)
 #define PTE_U (1L << 4)
+#define PTE_PT (1L << 5)
 
 /* Allocate page table */
 #define PG_ALLOC 1
@@ -48,6 +49,7 @@ typedef uint64_t pte_t;
 
 pte_t* search_pt_tree(ptb_t pagetable, uint64_t va, int alloc);
 int map_pages(ptb_t pagetable, uint64_t va, uint64_t size, uint64_t pa, int perm, char* purp);
+int unmap_pages(ptb_t pagetable, uint64_t va, uint64_t size);
 void kernel_vm_init();
 
 #endif

@@ -6,7 +6,6 @@
 #include "../include/vm.h"
 #include "../include/kmalloc.h"
 #include "../include/kerror.h"
-#include "../include/kmalloc.h"
 #include "../include/riscv.h"
 #include "../include/string.h"
 #include "../include/printk.h"
@@ -40,7 +39,8 @@ extern char trap[];
 ptb_t kernel_ptb;
 
 /* Return the address of the PTE in page table pagetable that corresponds to virtual 
-address va. Create any required page-table pages if needed. */
+address va. Create any required page-table if needed.
+Return lowest level PTE address, which pointing to a data page */
 pte_t* search_pt_tree(ptb_t pagetable, uint64_t va, int alloc){
     if (va > MAXVA) 
         kerror(__FILE_NAME__,__LINE__,"Illegal virtual memory address");
@@ -69,7 +69,7 @@ pte_t* search_pt_tree(ptb_t pagetable, uint64_t va, int alloc){
     return &pagetable[GET_PT_IDX(va, 0)];
 }
 
-/*  */
+/* Map physical and virtual pages */
 int map_pages(ptb_t pagetable, uint64_t va, uint64_t size, uint64_t pa, int perm, char* purp){
     if (size <= 0)
         kerror(__FILE_NAME__,__LINE__,"Incorrect size");
@@ -79,13 +79,34 @@ int map_pages(ptb_t pagetable, uint64_t va, uint64_t size, uint64_t pa, int perm
     pte_t* pte;
 
     while (curr_va < end_va) {
-        pte = search_pt_tree(pagetable, curr_va, PG_ALLOC);
-        if (!pte) return 0;
+        if ((pte = search_pt_tree(pagetable, curr_va, PG_ALLOC)) == 0) return 0;
         if (PTE_VALID(*pte)) 
             kerror(__FILE_NAME__,__LINE__,"PTE already valid");
         *pte = GET_PTE(pa) | perm | PTE_V;
         curr_va += PSIZE;
         pa += PSIZE;
+    }
+
+    return 1;
+}
+
+/* Unmap physical and virtual pages */
+int unmap_pages(ptb_t pagetable, uint64_t va, uint64_t size){
+    if (size <= 0)
+        kerror(__FILE_NAME__,__LINE__,"Incorrect size");
+    uint64_t curr_va = ADDR_ROUND(va, PSIZE, 0);
+    uint64_t end_va  = ADDR_ROUND((va+size), PSIZE, 0);
+    printk("[vm.c] Unmapping va[%p-%p]\n",curr_va, end_va);
+    pte_t* pte;
+
+    while (curr_va < end_va) {
+        if ((pte = search_pt_tree(pagetable, curr_va, PG_NOT_ALLOC)) == 0) 
+            kerror(__FILE_NAME__,__LINE__,"search_pt_tree error");
+        if ((*pte & PTE_V) == 0 || ((*pte & 0x3FF) == PTE_V))
+            kerror(__FILE_NAME__,__LINE__,"unmap page valid error");
+        kfree((void*)GET_PA(*pte));
+        *pte = 0;
+        curr_va += PSIZE;
     }
     return 1;
 }
@@ -100,29 +121,25 @@ void kernel_vm_init(){
     printk("|              kernel_vm_init              |\n");
     printk("+------------------------------------------+\n");
 
-    // UART
-    if (!map_pages(kernel_ptb, UART_BASE, PSIZE, UART_BASE, PTE_R | PTE_W, "UART"))
-        kerror(__FILE_NAME__,__LINE__,"Error in mapping UART");
-    
     // Text
     if (!map_pages(kernel_ptb, KBASE, (uint64_t)etext-KBASE, KBASE, PTE_R | PTE_X, "Kernel text"))
         kerror(__FILE_NAME__,__LINE__,"Error in mapping Kernel text");
-    
     // Data
     if (!map_pages(kernel_ptb, (uint64_t)etext, (uint64_t)end-(uint64_t)etext, (uint64_t)etext, PTE_R | PTE_W, "Kernel data"))
         kerror(__FILE_NAME__,__LINE__,"Error in mapping Kernel data");
-    
+    // UART
+    if (!map_pages(kernel_ptb, UART_BASE, PSIZE, UART_BASE, PTE_R | PTE_W, "UART"))
+        kerror(__FILE_NAME__,__LINE__,"Error in mapping UART");
     // PLIC
     if (!map_pages(kernel_ptb, PLIC, 0x400000, PLIC, PTE_R | PTE_W, "PLIC"))
         kerror(__FILE_NAME__,__LINE__,"Error in mapping PLIC");
-    
     // Virtio
     if (!map_pages(kernel_ptb, VIRTIO, PSIZE, VIRTIO, PTE_R | PTE_W, "Virtio"))
         kerror(__FILE_NAME__,__LINE__,"Error in mapping Virtio");
     
     /* Trap 
      * The trap is supposed to be at the second page from the start of the 
-     * KER_BASE, so we mapped MAXVA-PSIZE to trap ehich is defined in the 
+     * KER_BASE, so we mapped MAXVA-PSIZE to trap which is defined in the 
      * linker script 
      */
     if (!map_pages(kernel_ptb, MAXVA-PSIZE, PSIZE, (uint64_t)trap, PTE_R | PTE_X, "Trap"))

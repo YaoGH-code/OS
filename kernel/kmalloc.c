@@ -8,6 +8,8 @@
 #include "../include/string.h"
 #include "../include/spinlock.h"
 #include "../include/printk.h"
+#include "../include/kerror.h"
+
 
 
 /*
@@ -77,10 +79,8 @@ void* kmalloc(){
 
 /* Free a 4096 bytes physical page pointed by pa */
 void kfree(void *pa){
-    if (((uint64_t)pa % PSIZE) != 0 || (char *)pa < free_start || (char *)pa > end){
-        //kerror();
-    }
-
+    if (((uint64_t)pa % PSIZE) != 0 || (char *)pa < free_start || (char *)pa > end)
+        kerror(__FILE_NAME__,__LINE__,"kfree");
     memset(pa, 1, PSIZE);
     struct block *b = (struct block *) pa;
 
