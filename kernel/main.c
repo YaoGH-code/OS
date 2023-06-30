@@ -18,38 +18,45 @@
 #include "../include/vm.h"
 #include "../include/trap_handle.h"
 #include "../include/plic.h"
+#include "../include/disk.h"
+#include "../include/mmio.h"
+#include "../include/bio.h"
+#include "../include/fs.h"
+#include "../include/console.h"
 
+volatile static int started = 0;
 extern ptb_t kernel_ptb;
 extern char etext[];
 
+void usertrap();
+
 int main(){
     if (!get_coreid()){
-        uart_init();
+        console_init();
         printk_init();
         printk("\n");
         printk("Kernel is booting...\n");
         pm_init();
         kernel_vm_init();
         proc_init();
-        // trap_init();
-        // plic_init();
-        printk("Kernel is booting...\n");
+        trap_init();
+        plic_init();
+        write_sstatus(read_sstatus()|1<<1);
 
 
-
-
-
-
-
-
-
-
-    }
-    for (;;);
-    
-
-
-
-
+        // binit();
+        // iinit();
+        // disk_init();
+        // printk("Kernel is booting...\n");
+        // __sync_synchronize();
+        // started = 1;
+        // printk("Ending...\n");
+    } 
+    // else {
+    //     while(started == 0);
+    //     __sync_synchronize();
+    //     printk("hart %d starting\n", get_coreid());
+    // }
+    for(;;);
     return 0;
 };

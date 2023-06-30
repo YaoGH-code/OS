@@ -106,7 +106,13 @@ extern struct core cores[NCORE];
 
 int get_coreid();
 struct core* get_mycore();
-struct proc* get_new_proc();
+struct proc* get_myproc();
+pid_t next_pid();
 void proc_init();
+void restore_proc(proc_t* proc);
+int prep_trap_frame(proc_t* proc);
+int prep_page_table(proc_t* proc);
+struct proc* get_new_proc();
+void start_proc();
 
 #endif

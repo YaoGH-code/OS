@@ -34,6 +34,17 @@ struct core* get_mycore(){
   return &cores[id];
 }
 
+// FIXME
+struct proc*
+get_myproc(void)
+{
+  intr_push();
+  struct core *c = get_mycore();
+  struct proc *p = c->proc;
+  intr_pop();
+  return p;
+}
+
 /* Get next valid pid */
 pid_t next_pid(){
   pid_t res = 0;
@@ -85,9 +96,8 @@ void restore_proc(proc_t* proc){
 
 int prep_trap_frame(proc_t* proc){
   struct trapframe *new_tf = (struct trapframe*)kmalloc();
-  if (new_tf == 0){
-    return 0;
-  }
+  if (new_tf == 0) return 0;
+
   proc->trapframe = new_tf;
   return 1;
 }
@@ -141,4 +151,9 @@ proc_t* get_new_proc(){
     }
   }
   return 0;
+}
+
+void start_proc(){
+  
+
 }

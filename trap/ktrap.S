@@ -1,4 +1,3 @@
-
 .global kernel_trap
 .global ktrap # kernel vec
 .align 4

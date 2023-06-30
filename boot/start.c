@@ -164,7 +164,7 @@ void start()
     write_mstatus(read_mstatus() | MSTATUS_MIE);
 
     /* Machine interrupt-enable register -> timer interrrupt enable */
-    write_mie(read_mie()| MIE_MTIE);
+    write_mie(read_mie() | MIE_MTIE);
 
     /* return to main function in supervisor mode */
     asm volatile("mret");

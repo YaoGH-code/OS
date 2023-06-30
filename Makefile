@@ -4,7 +4,7 @@ TMP := $(SRC:.c=.o) $(ASM:.S=.o)
 OBJ := $(TMP:boot/entry.o=)
 
 ifndef CPUS
-CPUS := 1
+CPUS := 3
 endif
 
 BLKCOUNT := 1

@@ -21,9 +21,17 @@ QEMU is using 16550: http://byterunner.com/16550.html
 #define FCR_FIFO_CLEAR (3<<1)  // clear the content of the two FIFOs
 #define IER_RX_ENABLE (1<<0)   // enable the receiver ready interrupt
 #define IER_TX_ENABLE (1<<1)   // enable the transmitter empty interrupt
-#define LSR_THR_IDLE (1 << 5)  // transmitter hold register (or FIFO) is empty, CPU can load the next character
+#define LSR_THR_IDLE (1<<5)  // transmitter hold register (or FIFO) is empty, CPU can load the next character
+
+#define LSR_RDR_READY (1<<0)
+
+#define UART_BSIZE 32
 
 void uart_init(void);
+char uart_get_char();
+void uart_putc(char c);
 void uart_putc_sync(char c);
+void uart_isr(void);
+void uart_flush();
 
 #endif
